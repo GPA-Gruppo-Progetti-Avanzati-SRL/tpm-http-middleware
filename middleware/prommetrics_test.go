@@ -1,7 +1,7 @@
 package middleware_test
 
 import (
-	"GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/middleware"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/middleware"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 	"testing"

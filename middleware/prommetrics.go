@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/middleware/promutil"
 	"fmt"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/middleware/promutil"
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
 	"github.com/prometheus/client_golang/prometheus"

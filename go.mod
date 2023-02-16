@@ -1,4 +1,4 @@
-module GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware
+module github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware
 
 go 1.19
 
