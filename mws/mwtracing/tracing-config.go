@@ -1,4 +1,4 @@
-package middleware
+package mwtracing
 
 const (
 	TracingHandlerId   = "gin-mw-tracing"

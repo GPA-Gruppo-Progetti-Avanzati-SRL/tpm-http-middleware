@@ -1,4 +1,4 @@
-package middleware
+package mwzerologger
 
 import (
 	"github.com/gin-gonic/gin"

@@ -1,4 +1,4 @@
-package middleware
+package mwerror
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package middleware
+package mwerror
 
 const (
 	ErrorHandlerId   = "gin-mw-error"

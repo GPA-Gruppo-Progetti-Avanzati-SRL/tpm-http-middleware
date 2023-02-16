@@ -1,6 +1,8 @@
-package middleware
+package mwerror
 
 import (
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mwregistry"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mws"
 	"github.com/gin-gonic/gin"
 	gonanoid "github.com/matoous/go-nanoid"
 	"github.com/mitchellh/mapstructure"
@@ -11,11 +13,17 @@ import (
 	"reflect"
 )
 
+func init() {
+	const semLogContext = "error-middleware::init"
+	log.Info().Msg(semLogContext)
+	mwregistry.RegisterHandlerFactory(ErrorHandlerId, NewErrorHandler)
+}
+
 type ErrorHandler struct {
 	config *ErrorHandlerConfig
 }
 
-func MustNewErrorHandler(cfg interface{}) MiddlewareHandler {
+func MustNewErrorHandler(cfg interface{}) mws.MiddlewareHandler {
 
 	const semLogContext = "must-new-error-handler"
 	h, err := NewErrorHandler(cfg)
@@ -26,13 +34,13 @@ func MustNewErrorHandler(cfg interface{}) MiddlewareHandler {
 	return h
 }
 
-func NewErrorHandler(cfg interface{}) (MiddlewareHandler, error) {
+func NewErrorHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 
 	const semLogContext = "new-error-handler"
 
 	tcfg := DefaultErrorHandlerConfig
 	if cfg != nil && !reflect.ValueOf(cfg).IsNil() {
-		if mapCfg, ok := cfg.(HandlerConfig); ok {
+		if mapCfg, ok := cfg.(mws.MiddlewareHandlerConfig); ok {
 			err := mapstructure.Decode(mapCfg, &tcfg)
 			if err != nil {
 				return nil, err

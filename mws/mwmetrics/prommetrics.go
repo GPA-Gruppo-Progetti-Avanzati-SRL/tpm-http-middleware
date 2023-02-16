@@ -1,8 +1,10 @@
-package middleware
+package mwmetrics
 
 import (
 	"fmt"
-	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/middleware/promutil"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mwregistry"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mws"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mws/mwmetrics/promutil"
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
 	"github.com/prometheus/client_golang/prometheus"
@@ -11,12 +13,18 @@ import (
 	"time"
 )
 
+func init() {
+	const semLogContext = "metrics-middleware::init"
+	log.Info().Msg(semLogContext)
+	mwregistry.RegisterHandlerFactory(MetricsHandlerId, NewPromHttpMetricsHandler)
+}
+
 type PromHttpMetricsHandler struct {
 	config     *PromHttpMetricsHandlerConfig
 	collectors []promutil.MetricInfo
 }
 
-func MustNewPromHttpMetricsHandler(cfg interface{}) MiddlewareHandler {
+func MustNewPromHttpMetricsHandler(cfg interface{}) mws.MiddlewareHandler {
 
 	const semLogContext = "must-new-metrics-handler"
 	h, err := NewPromHttpMetricsHandler(cfg)
@@ -27,12 +35,12 @@ func MustNewPromHttpMetricsHandler(cfg interface{}) MiddlewareHandler {
 	return h
 }
 
-func NewPromHttpMetricsHandler(cfg interface{}) (MiddlewareHandler, error) {
+func NewPromHttpMetricsHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 	const semLogContext = "new-metrics-handler"
 	tcfg := DefaultPromHttpMetricsHandlerConfig
 
 	if cfg != nil && !reflect.ValueOf(cfg).IsNil() {
-		if mapCfg, ok := cfg.(HandlerConfig); ok {
+		if mapCfg, ok := cfg.(mws.MiddlewareHandlerConfig); ok {
 			err := mapstructure.Decode(mapCfg, &tcfg)
 			if err != nil {
 				return nil, err

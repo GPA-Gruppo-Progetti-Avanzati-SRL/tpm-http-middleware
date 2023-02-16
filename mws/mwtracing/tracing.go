@@ -1,6 +1,8 @@
-package middleware
+package mwtracing
 
 import (
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mwregistry"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mws"
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
 	"github.com/opentracing/opentracing-go"
@@ -9,11 +11,17 @@ import (
 	"reflect"
 )
 
+func init() {
+	const semLogContext = "tracing-middleware::init"
+	log.Info().Msg(semLogContext)
+	mwregistry.RegisterHandlerFactory(TracingHandlerId, NewTracingHandler)
+}
+
 type TracingHandler struct {
 	config *TracingHandlerConfig
 }
 
-func MustNewTracingHandler(cfg interface{}) MiddlewareHandler {
+func MustNewTracingHandler(cfg interface{}) mws.MiddlewareHandler {
 
 	const semLogContext = "must-new-tracing-handler"
 	h, err := NewTracingHandler(cfg)
@@ -25,13 +33,13 @@ func MustNewTracingHandler(cfg interface{}) MiddlewareHandler {
 }
 
 // NewTracingHandler builds an Handler
-func NewTracingHandler(cfg interface{}) (MiddlewareHandler, error) {
+func NewTracingHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 
 	const semLogContext = "new-tracing-handler"
 	tcfg := DefaultTracingHandlerConfig
 
 	if cfg != nil && !reflect.ValueOf(cfg).IsNil() {
-		if mapCfg, ok := cfg.(HandlerConfig); ok {
+		if mapCfg, ok := cfg.(mws.MiddlewareHandlerConfig); ok {
 			err := mapstructure.Decode(mapCfg, &tcfg)
 			if err != nil {
 				return nil, err

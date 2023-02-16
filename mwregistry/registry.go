@@ -1,31 +1,24 @@
-package middleware
+package mwregistry
 
 import (
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mws"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 )
 
-type HandlerCatalogConfig map[string]HandlerConfig
-type HandlerConfig map[string]interface{}
+type HandlerCatalogConfig map[string]mws.MiddlewareHandlerConfig
+type HandlerFactory func(interface{}) (mws.MiddlewareHandler, error)
+type HandlerRegistry map[string]gin.HandlerFunc
 
-/*
-struct {
-	ErrCfg     *ErrorHandlerConfig           `yaml:"gin-mw-error" mapstructure:"gin-mw-error" json:"gin-mw-error"`
-	MetricsCfg *PromHttpMetricsHandlerConfig `yaml:"gin-mw-metrics" mapstructure:"gin-mw-metrics" json:"gin-mw-metrics"`
-	TraceCfg   *TracingHandlerConfig         `yaml:"gin-mw-tracing" mapstructure:"gin-mw-tracing" json:"gin-mw-tracing"`
-}
-*/
-
-type HandlerFactory func(interface{}) (MiddlewareHandler, error)
-
-var handlerFactoryMap = map[string]HandlerFactory{
-	ErrorHandlerId:   NewErrorHandler,
-	TracingHandlerId: NewTracingHandler,
-	MetricsHandlerId: NewPromHttpMetricsHandler,
-}
+var handlerFactoryMap map[string]HandlerFactory
 
 func RegisterHandlerFactory(handlerId string, hf HandlerFactory) {
 	const semLogContext = "middleware:register-handler-factory"
+
+	if handlerFactoryMap == nil {
+		handlerFactoryMap = make(map[string]HandlerFactory)
+	}
+
 	if _, ok := handlerFactoryMap[handlerId]; ok {
 		log.Warn().Str("mw-id", handlerId).Msg(semLogContext + " handler factory already registered")
 		return
@@ -34,13 +27,11 @@ func RegisterHandlerFactory(handlerId string, hf HandlerFactory) {
 	handlerFactoryMap[handlerId] = hf
 }
 
-type HandlerRegistry map[string]gin.HandlerFunc
-
 var registry HandlerRegistry = make(map[string]gin.HandlerFunc)
 
 func InitializeHandlerRegistry(registryConfig HandlerCatalogConfig, mwInUse []string) error {
 
-	const semLogContext = "middleware:registry-initialization"
+	const semLogContext = "middleware::registry-initialization"
 
 	for _, mw := range mwInUse {
 
@@ -87,6 +78,6 @@ func InitializeHandlerRegistry(registryConfig HandlerCatalogConfig, mwInUse []st
 	return nil
 }
 
-func GetHandlerFunc(name string) gin.HandlerFunc {
+func GetMiddlewareHandler(name string) gin.HandlerFunc {
 	return registry[name]
 }

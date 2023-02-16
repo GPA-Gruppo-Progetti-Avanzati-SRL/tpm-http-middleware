@@ -1,6 +1,8 @@
-package middleware
+package mwmetrics
 
-import "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/middleware/promutil"
+import (
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mws/mwmetrics/promutil"
+)
 
 const (
 	MetricsHandlerId   = "gin-mw-metrics"
