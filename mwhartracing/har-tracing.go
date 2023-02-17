@@ -87,11 +87,13 @@ func (t *HarTracingHandler) HandleFunc() gin.HandlerFunc {
 		if nil != serr {
 			// No incoming span. Need to create a new root one with an actual entry.
 			span = hartracing.GlobalTracer().StartSpan()
+			log.Trace().Str("span-id", span.Id()).Msg(semLogContext + " - starting a brand new span")
 			blw := &bodyBufferedWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 			c.Writer = blw
 			entry = getRequestEntry(c)
 		} else {
 			span = hartracing.GlobalTracer().StartSpan(hartracing.ChildOf(parentSpanCtx))
+			log.Trace().Str("span-id", span.Id()).Str("parent-span-id", parentSpanCtx.Id()).Msg(semLogContext + " - started a child span")
 		}
 		defer span.Finish()
 
