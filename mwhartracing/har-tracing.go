@@ -82,35 +82,30 @@ func (t *HarTracingHandler) HandleFunc() gin.HandlerFunc {
 		log.Trace().Str("requestPath", c.Request.RequestURI).Msg(semLogContext)
 
 		var span hartracing.Span
-		createHar := true
+		var entry har.Entry
 		parentSpanCtx, serr := hartracing.GlobalTracer().Extract("", hartracing.HTTPHeadersCarrier(c.Request.Header))
 		if nil != serr {
+			// No incoming span. Need to create a new root one with an actual entry.
 			span = hartracing.GlobalTracer().StartSpan()
 			blw := &bodyBufferedWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 			c.Writer = blw
+			entry = getRequestEntry(c)
 		} else {
 			span = hartracing.GlobalTracer().StartSpan(hartracing.ChildOf(parentSpanCtx))
-			createHar = false
 		}
 		defer span.Finish()
 
 		c.Request = c.Request.WithContext(hartracing.ContextWithSpan(c.Request.Context(), span))
 
-		var entry har.Entry
-		if createHar {
-			entry = getRequestEntry(c)
-		}
-
 		if nil != c {
 			c.Next()
 		}
 
-		if createHar {
+		if entry.Request != nil {
 			getResponseEntry(c, &entry)
 			span.AddEntry(&entry)
 		}
 
-		log.Trace().Interface("response-headers", c.Writer.Header()).Msg(semLogContext)
 		log.Trace().Msg(semLogContext)
 	}
 }
@@ -129,18 +124,18 @@ func getRequestEntry(c *gin.Context) har.Entry {
 
 	var postData *har.PostData
 	bodySize := -1
-	// if c.Request.ContentLength > 0 {
-	body, _ := io.ReadAll(c.Request.Body)
-	c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
-	if len(body) > 0 {
-		bodySize = len(body)
-		postData = &har.PostData{
-			MimeType: ct,
-			Data:     body,
-			Params:   nil,
+	if c.Request.ContentLength > 0 {
+		body, _ := io.ReadAll(c.Request.Body)
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(body))
+		if len(body) > 0 {
+			bodySize = len(body)
+			postData = &har.PostData{
+				MimeType: ct,
+				Data:     body,
+				Params:   nil,
+			}
 		}
 	}
-	//}
 
 	req := &har.Request{
 		Method:      c.Request.Method,
