@@ -36,16 +36,19 @@ func MustNewErrorHandler(cfg interface{}) mws.MiddlewareHandler {
 
 func NewErrorHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 
-	const semLogContext = "new-error-handler"
+	const semLogContext = "error-handler::new"
 
 	tcfg := DefaultErrorHandlerConfig
 	if cfg != nil && !reflect.ValueOf(cfg).IsNil() {
-		if mapCfg, ok := cfg.(mws.MiddlewareHandlerConfig); ok {
-			err := mapstructure.Decode(mapCfg, &tcfg)
+		switch typedCfg := cfg.(type) {
+		case mws.MiddlewareHandlerConfig:
+			err := mapstructure.Decode(typedCfg, &tcfg)
 			if err != nil {
 				return nil, err
 			}
-		} else {
+
+			log.Info().Interface("cfg", &tcfg).Msg(semLogContext)
+		default:
 			log.Warn().Msg(semLogContext + " unmarshal issue for error handler config")
 		}
 	} else {

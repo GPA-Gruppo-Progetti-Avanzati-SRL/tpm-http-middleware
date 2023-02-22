@@ -35,16 +35,19 @@ func MustNewTracingHandler(cfg interface{}) mws.MiddlewareHandler {
 // NewTracingHandler builds an Handler
 func NewTracingHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 
-	const semLogContext = "new-tracing-handler"
+	const semLogContext = "tracing-handler::new"
 	tcfg := DefaultTracingHandlerConfig
 
 	if cfg != nil && !reflect.ValueOf(cfg).IsNil() {
-		if mapCfg, ok := cfg.(mws.MiddlewareHandlerConfig); ok {
-			err := mapstructure.Decode(mapCfg, &tcfg)
+		switch typedCfg := cfg.(type) {
+		case mws.MiddlewareHandlerConfig:
+			err := mapstructure.Decode(typedCfg, &tcfg)
 			if err != nil {
 				return nil, err
 			}
-		} else {
+
+			log.Info().Interface("cfg", &tcfg).Msg(semLogContext)
+		default:
 			log.Warn().Msg(semLogContext + " unmarshal issue for tracing handler config")
 		}
 	} else {

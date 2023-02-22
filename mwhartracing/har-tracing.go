@@ -37,7 +37,7 @@ func (w bodyBufferedWriter) Write(b []byte) (int, error) {
 
 func MustNewTracingHandler(cfg interface{}) mws.MiddlewareHandler {
 
-	const semLogContext = "must-new-tracing-handler"
+	const semLogContext = "har-tracing-handler::must-new"
 	h, err := NewHarTracingHandler(cfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg(semLogContext)
@@ -49,18 +49,21 @@ func MustNewTracingHandler(cfg interface{}) mws.MiddlewareHandler {
 // NewHarTracingHandler builds an Handler
 func NewHarTracingHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 
-	const semLogContext = "new-tracing-handler"
+	const semLogContext = "har-tracing-handler::new"
 	tcfg := DefaultTracingHandlerConfig
 
 	if cfg != nil && !reflect.ValueOf(cfg).IsNil() {
-		if mapCfg, ok := cfg.(mws.MiddlewareHandlerConfig); ok {
-			err := mapstructure.Decode(mapCfg, &tcfg)
+		switch typedCfg := cfg.(type) {
+		case mws.MiddlewareHandlerConfig:
+			err := mapstructure.Decode(typedCfg, &tcfg)
 			if err != nil {
 				return nil, err
 			}
-		} else {
+			log.Info().Interface("cfg", &tcfg).Msg(semLogContext)
+		default:
 			log.Warn().Msg(semLogContext + " unmarshal issue for tracing handler config")
 		}
+
 	} else {
 		log.Info().Str("mw-id", HarTracingHandlerId).Msg(semLogContext + " config null...reverting to default values")
 	}

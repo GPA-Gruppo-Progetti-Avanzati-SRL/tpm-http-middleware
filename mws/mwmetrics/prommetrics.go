@@ -26,7 +26,7 @@ type PromHttpMetricsHandler struct {
 
 func MustNewPromHttpMetricsHandler(cfg interface{}) mws.MiddlewareHandler {
 
-	const semLogContext = "must-new-metrics-handler"
+	const semLogContext = "metrics-handler::must-new"
 	h, err := NewPromHttpMetricsHandler(cfg)
 	if err != nil {
 		log.Fatal().Err(err).Msg(semLogContext)
@@ -36,16 +36,19 @@ func MustNewPromHttpMetricsHandler(cfg interface{}) mws.MiddlewareHandler {
 }
 
 func NewPromHttpMetricsHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
-	const semLogContext = "new-metrics-handler"
+	const semLogContext = "metrics-handler::new"
 	tcfg := DefaultPromHttpMetricsHandlerConfig
 
 	if cfg != nil && !reflect.ValueOf(cfg).IsNil() {
-		if mapCfg, ok := cfg.(mws.MiddlewareHandlerConfig); ok {
-			err := mapstructure.Decode(mapCfg, &tcfg)
+		switch typedCfg := cfg.(type) {
+		case mws.MiddlewareHandlerConfig:
+			err := mapstructure.Decode(typedCfg, &tcfg)
 			if err != nil {
 				return nil, err
 			}
-		} else {
+
+			log.Info().Interface("cfg", &tcfg).Msg(semLogContext)
+		default:
 			log.Warn().Msg(semLogContext + " unmarshal issue for tracing handler config")
 		}
 	} else {

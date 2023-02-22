@@ -6,7 +6,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type HandlerCatalogConfig map[string]mws.MiddlewareHandlerConfig
+type HandlerCatalogConfig map[string]interface{}
 type HandlerFactory func(interface{}) (mws.MiddlewareHandler, error)
 type HandlerRegistry map[string]gin.HandlerFunc
 
