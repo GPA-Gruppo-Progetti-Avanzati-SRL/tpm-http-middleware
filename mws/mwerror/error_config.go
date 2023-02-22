@@ -54,7 +54,37 @@ type StatusCodeHandlingPolicy struct {
 	StatusCodeRanges []StatusCodeRange `yaml:"status-codes,omitempty"  mapstructure:"status-codes,omitempty"  json:"status-codes,omitempty"`
 }
 
-func (p StatusCodeHandlingPolicy) Hightlight(c int) bool {
+//    WithErrorEnabled(bool)   Enables/Disables error disclosure to the client
+//                             if enabled the http error description is propagated to the client
+//                             if disabled a response Header, configured with WithErrorDisclosureHeader is returned
+//                             to the client with an errorid and the error is injected in an opentracing span having
+//                             the same id as tag
+//    WithSpanTag(string)      span tag for the error  (defaults to "error.id")
+//    WithHeader(string)       error id header (defaults to "x-errid")
+//    WithAlphabet(string)     alphabet  to generate the error id
+
+type ErrorHandlerConfig struct {
+	WithCause        bool              `yaml:"with-cause,omitempty"  mapstructure:"with-cause,omitempty" json:"with-cause,omitempty"`
+	Alphabet         string            `yaml:"alphabet,omitempty"  mapstructure:"alphabet,omitempty"  json:"alphabet,omitempty"`
+	SpanTag          string            `yaml:"span-tag,omitempty"  mapstructure:"span-tag,omitempty"  json:"span-tag,omitempty"`
+	Header           string            `yaml:"header,omitempty"  mapstructure:"header,omitempty"  json:"header,omitempty"`
+	PolicyMode       string            `yaml:"status-code-policy,omitempty"  mapstructure:"status-code-policy,omitempty"  json:"status-code-policy,omitempty"`
+	StatusCodeRanges []StatusCodeRange `yaml:"status-code-policy-ranges,omitempty"  mapstructure:"status-code-policy-ranges,omitempty"  json:"status-code-policy-ranges,omitempty"`
+}
+
+var DefaultErrorHandlerConfig = ErrorHandlerConfig{
+	WithCause:  ErrorHandlerDefaultWithCause,
+	Alphabet:   ErrorHandlerDefaultAlphabet,
+	SpanTag:    ErrorHandlerDefaultSpanTag,
+	Header:     ErrorHandlerDefaultHeader,
+	PolicyMode: ErrorHandlerDefaultStatusCodeHandlingPolicyMode,
+}
+
+func (h *ErrorHandlerConfig) GetKind() string {
+	return ErrorHandlerKind
+}
+
+func (p *ErrorHandlerConfig) Highlight(c int) bool {
 
 	if p.PolicyMode == "" || p.PolicyMode == ErrorHandlerStatusCodeHandlingPolicyModeNone {
 		return false
@@ -77,37 +107,6 @@ func (p StatusCodeHandlingPolicy) Hightlight(c int) bool {
 	}
 
 	return hl
-}
-
-//    WithErrorEnabled(bool)   Enables/Disables error disclosure to the client
-//                             if enabled the http error description is propagated to the client
-//                             if disabled a response Header, configured with WithErrorDisclosureHeader is returned
-//                             to the client with an errorid and the error is injected in an opentracing span having
-//                             the same id as tag
-//    WithSpanTag(string)      span tag for the error  (defaults to "error.id")
-//    WithHeader(string)       error id header (defaults to "x-errid")
-//    WithAlphabet(string)     alphabet  to generate the error id
-
-type ErrorHandlerConfig struct {
-	WithCause                bool                     `yaml:"with-cause,omitempty"  mapstructure:"with-cause,omitempty" json:"with-cause,omitempty"`
-	Alphabet                 string                   `yaml:"alphabet,omitempty"  mapstructure:"alphabet,omitempty"  json:"alphabet,omitempty"`
-	SpanTag                  string                   `yaml:"span-tag,omitempty"  mapstructure:"span-tag,omitempty"  json:"span-tag,omitempty"`
-	Header                   string                   `yaml:"header,omitempty"  mapstructure:"header,omitempty"  json:"header,omitempty"`
-	StatusCodeHandlingPolicy StatusCodeHandlingPolicy `yaml:"status-code-policy,omitempty"  mapstructure:"status-code-policy,omitempty"  json:"status-code-policy,omitempty"`
-}
-
-var DefaultErrorHandlerConfig = ErrorHandlerConfig{
-	WithCause: ErrorHandlerDefaultWithCause,
-	Alphabet:  ErrorHandlerDefaultAlphabet,
-	SpanTag:   ErrorHandlerDefaultSpanTag,
-	Header:    ErrorHandlerDefaultHeader,
-	StatusCodeHandlingPolicy: StatusCodeHandlingPolicy{
-		PolicyMode: ErrorHandlerDefaultStatusCodeHandlingPolicyMode,
-	},
-}
-
-func (h *ErrorHandlerConfig) GetKind() string {
-	return ErrorHandlerKind
 }
 
 type ErrorHandlerConfigOption func(*ErrorHandlerConfig)

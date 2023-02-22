@@ -83,7 +83,7 @@ func (h *ErrorHandler) HandleFunc() gin.HandlerFunc {
 				}
 
 				c.AbortWithStatusJSON(ae.GetStatusCode(), ae)
-			} else if h.config.StatusCodeHandlingPolicy.Hightlight(c.Writer.Status()) {
+			} else if h.config.Highlight(c.Writer.Status()) {
 				span := opentracing.SpanFromContext(c.Request.Context())
 				if nil != span {
 					// In this case headers have been written already.... c.Writer.Written() == true
