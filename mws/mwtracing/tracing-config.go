@@ -1,7 +1,7 @@
 package mwtracing
 
 const (
-	TracingHandlerId   = "gin-mw-tracing"
+	TracingHandlerId   = "mw-tracing"
 	TracingHandlerKind = "mw-kind-tracing"
 
 	TracingHandlerSourceTypeHeader = "header"

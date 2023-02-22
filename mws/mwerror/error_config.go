@@ -1,7 +1,7 @@
 package mwerror
 
 const (
-	ErrorHandlerId   = "gin-mw-error"
+	ErrorHandlerId   = "mw-error"
 	ErrorHandlerKind = "mw-kind-error"
 
 	ErrorHandlerDefaultAlphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-"

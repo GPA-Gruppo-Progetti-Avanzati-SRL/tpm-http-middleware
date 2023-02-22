@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	MetricsHandlerId   = "gin-mw-metrics"
+	MetricsHandlerId   = "mw-metrics"
 	MetricsHandlerKind = "mw-kind-metrics"
 )
 

@@ -1,7 +1,7 @@
 package mwhartracing
 
 const (
-	HarTracingHandlerId   = "gin-mw-har-tracing"
+	HarTracingHandlerId   = "mw-har-tracing"
 	HarTracingHandlerKind = "mw-kind-har-tracing"
 )
 
