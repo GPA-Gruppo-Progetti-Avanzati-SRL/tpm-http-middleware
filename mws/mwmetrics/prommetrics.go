@@ -55,8 +55,6 @@ func NewPromHttpMetricsHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 		log.Info().Str("mw-id", MetricsHandlerId).Msg(semLogContext + " config null...reverting to default values")
 	}
 
-	log.Info().Interface("cfg", &tcfg).Msg(semLogContext)
-
 	if tcfg.Namespace == "" || tcfg.Subsystem == "" {
 		tcfg = DefaultMetricsConfig
 	} else {

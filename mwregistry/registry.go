@@ -41,39 +41,16 @@ func InitializeHandlerRegistry(registryConfig HandlerCatalogConfig, mwInUse []st
 			continue
 		}
 
-		log.Info().Str("mw-id", mw).Msg(semLogContext + " initializing handler")
+		log.Info().Str("mw-id", mw).Msg(semLogContext)
 		cfg := registryConfig[mw]
 		r, err := factory(cfg)
 		if err != nil {
-			log.Error().Err(err).Str("mw-id", mw).Msg(semLogContext + " initialization handler failure")
+			log.Error().Err(err).Str("mw-id", mw).Msg(semLogContext + " handler initialization failure")
 			continue
 		}
 
 		registry[mw] = r.HandleFunc()
-
-		/*
-			switch mw {
-			case ErrorHandlerId:
-				registry[ErrorHandlerId] = NewErrorHandler(registryConfig.ErrCfg).HandleFunc()
-			case TracingHandlerId:
-				registry[TracingHandlerId] = NewTracingHandler(registryConfig.TraceCfg).HandleFunc()
-			case MetricsHandlerId:
-				registry[MetricsHandlerId] = NewPromHttpMetricsHandler(registryConfig.MetricsCfg).HandleFunc()
-			}
-		*/
 	}
-
-	/*
-		for n, i := range registryConfig {
-			if hanlderFactory, ok := handlerFactoryMap[n]; ok {
-				registry[n] = hanlderFactory(i).HandleFunc()
-			} else {
-				err := errors.New("cannot find factory for middleware handler of id: " + n)
-				log.Error().Err(err).Send()
-				return err
-			}
-		}
-	*/
 
 	return nil
 }
