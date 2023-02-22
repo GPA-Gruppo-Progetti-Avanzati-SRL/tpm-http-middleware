@@ -50,8 +50,8 @@ func (r StatusCodeRange) In(c int) bool {
 }
 
 type StatusCodeHandlingPolicy struct {
-	PolicyMode       string            `yaml:"policy-mode,omitempty"  mapstructure:"policy-mode,omitempty"  json:"policy-mode,omitempty"`
-	StatusCodeRanges []StatusCodeRange `yaml:"status-codes,omitempty"  mapstructure:"status-codes,omitempty"  json:"status-codes,omitempty"`
+	PolicyMode       string            `yaml:"mode,omitempty"  mapstructure:"mode,omitempty"  json:"mode,omitempty"`
+	StatusCodeRanges []StatusCodeRange `yaml:"ranges,omitempty"  mapstructure:"ranges,omitempty"  json:"ranges,omitempty"`
 }
 
 //    WithErrorEnabled(bool)   Enables/Disables error disclosure to the client
@@ -64,27 +64,28 @@ type StatusCodeHandlingPolicy struct {
 //    WithAlphabet(string)     alphabet  to generate the error id
 
 type ErrorHandlerConfig struct {
-	WithCause        bool              `yaml:"with-cause,omitempty"  mapstructure:"with-cause,omitempty" json:"with-cause,omitempty"`
-	Alphabet         string            `yaml:"alphabet,omitempty"  mapstructure:"alphabet,omitempty"  json:"alphabet,omitempty"`
-	SpanTag          string            `yaml:"span-tag,omitempty"  mapstructure:"span-tag,omitempty"  json:"span-tag,omitempty"`
-	Header           string            `yaml:"header,omitempty"  mapstructure:"header,omitempty"  json:"header,omitempty"`
-	PolicyMode       string            `yaml:"status-code-policy,omitempty"  mapstructure:"status-code-policy,omitempty"  json:"status-code-policy,omitempty"`
-	StatusCodeRanges []StatusCodeRange `yaml:"status-code-policy-ranges,omitempty"  mapstructure:"status-code-policy-ranges,omitempty"  json:"status-code-policy-ranges,omitempty"`
+	WithCause                bool                     `yaml:"with-cause,omitempty"  mapstructure:"with-cause,omitempty" json:"with-cause,omitempty"`
+	Alphabet                 string                   `yaml:"alphabet,omitempty"  mapstructure:"alphabet,omitempty"  json:"alphabet,omitempty"`
+	SpanTag                  string                   `yaml:"span-tag,omitempty"  mapstructure:"span-tag,omitempty"  json:"span-tag,omitempty"`
+	Header                   string                   `yaml:"header,omitempty"  mapstructure:"header,omitempty"  json:"header,omitempty"`
+	StatusCodeHandlingPolicy StatusCodeHandlingPolicy `yaml:"status-code-policy,omitempty"  mapstructure:"status-code-policy,omitempty"  json:"status-code-policy,omitempty"`
 }
 
 var DefaultErrorHandlerConfig = ErrorHandlerConfig{
-	WithCause:  ErrorHandlerDefaultWithCause,
-	Alphabet:   ErrorHandlerDefaultAlphabet,
-	SpanTag:    ErrorHandlerDefaultSpanTag,
-	Header:     ErrorHandlerDefaultHeader,
-	PolicyMode: ErrorHandlerDefaultStatusCodeHandlingPolicyMode,
+	WithCause: ErrorHandlerDefaultWithCause,
+	Alphabet:  ErrorHandlerDefaultAlphabet,
+	SpanTag:   ErrorHandlerDefaultSpanTag,
+	Header:    ErrorHandlerDefaultHeader,
+	StatusCodeHandlingPolicy: StatusCodeHandlingPolicy{
+		PolicyMode: ErrorHandlerDefaultStatusCodeHandlingPolicyMode,
+	},
 }
 
 func (h *ErrorHandlerConfig) GetKind() string {
 	return ErrorHandlerKind
 }
 
-func (p *ErrorHandlerConfig) Highlight(c int) bool {
+func (p *StatusCodeHandlingPolicy) Highlight(c int) bool {
 
 	if p.PolicyMode == "" || p.PolicyMode == ErrorHandlerStatusCodeHandlingPolicyModeNone {
 		return false

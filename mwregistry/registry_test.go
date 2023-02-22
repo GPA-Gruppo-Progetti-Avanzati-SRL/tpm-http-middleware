@@ -21,10 +21,11 @@ var cfg = []byte(`
           type: header
           value: Long-Running-Action
     gin-mw-error:
-      status-code-policy: if-unlisted 
-      status-code-policy-ranges:
-        - from: 200
-          to: 299
+      status-code-policy:
+         mode: if-unlisted 
+         ranges:
+           - from: 200
+             to: 299
 `)
 
 type AppConfig struct {
