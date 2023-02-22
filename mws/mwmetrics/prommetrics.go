@@ -46,14 +46,16 @@ func NewPromHttpMetricsHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 			if err != nil {
 				return nil, err
 			}
-
-			log.Info().Interface("cfg", &tcfg).Msg(semLogContext)
+		case *PromHttpMetricsHandlerConfig:
+			tcfg = *typedCfg
 		default:
 			log.Warn().Msg(semLogContext + " unmarshal issue for tracing handler config")
 		}
 	} else {
 		log.Info().Str("mw-id", MetricsHandlerId).Msg(semLogContext + " config null...reverting to default values")
 	}
+
+	log.Info().Interface("cfg", &tcfg).Msg(semLogContext)
 
 	if tcfg.Namespace == "" || tcfg.Subsystem == "" {
 		tcfg = DefaultMetricsConfig

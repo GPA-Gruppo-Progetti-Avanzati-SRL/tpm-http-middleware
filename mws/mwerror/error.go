@@ -47,7 +47,8 @@ func NewErrorHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 				return nil, err
 			}
 
-			log.Info().Interface("cfg", &tcfg).Msg(semLogContext)
+		case *ErrorHandlerConfig:
+			tcfg = *typedCfg
 		default:
 			log.Warn().Msg(semLogContext + " unmarshal issue for error handler config")
 		}
