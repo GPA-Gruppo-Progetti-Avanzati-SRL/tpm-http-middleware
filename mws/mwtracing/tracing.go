@@ -40,14 +40,13 @@ func NewTracingHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 
 	if cfg != nil && !reflect.ValueOf(cfg).IsNil() {
 		switch typedCfg := cfg.(type) {
-		case mws.MiddlewareHandlerConfig:
+		case map[string]interface{}:
 			err := mapstructure.Decode(typedCfg, &tcfg)
 			if err != nil {
 				return nil, err
 			}
 		case *TracingHandlerConfig:
 			tcfg = *typedCfg
-			log.Info().Interface("cfg", &tcfg).Msg(semLogContext)
 		default:
 			log.Warn().Msg(semLogContext + " unmarshal issue for tracing handler config")
 		}

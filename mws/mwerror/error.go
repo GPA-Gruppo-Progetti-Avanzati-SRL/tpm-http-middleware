@@ -41,7 +41,7 @@ func NewErrorHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 	tcfg := DefaultErrorHandlerConfig
 	if cfg != nil && !reflect.ValueOf(cfg).IsNil() {
 		switch typedCfg := cfg.(type) {
-		case mws.MiddlewareHandlerConfig:
+		case map[string]interface{}:
 			err := mapstructure.Decode(typedCfg, &tcfg)
 			if err != nil {
 				return nil, err
