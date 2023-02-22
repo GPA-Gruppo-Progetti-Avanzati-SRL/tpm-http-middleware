@@ -137,7 +137,7 @@ func getRequestEntry(c *gin.Context) har.Entry {
 			postData = &har.PostData{
 				MimeType: ct,
 				Data:     body,
-				Params:   nil,
+				Params:   []har.Param{},
 			}
 		}
 	}
