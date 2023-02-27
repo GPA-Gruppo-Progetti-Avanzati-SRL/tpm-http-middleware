@@ -8,6 +8,7 @@ import (
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mws"
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
+	"github.com/opentracing/opentracing-go"
 	"github.com/rs/zerolog/log"
 	"io"
 	"reflect"
@@ -54,6 +55,11 @@ func NewHarTracingHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 
 	if cfg != nil && !reflect.ValueOf(cfg).IsNil() {
 		switch typedCfg := cfg.(type) {
+		case mwregistry.HandlerCatalogConfig:
+			err := mapstructure.Decode(typedCfg, &tcfg)
+			if err != nil {
+				return nil, err
+			}
 		case map[string]interface{}:
 			err := mapstructure.Decode(typedCfg, &tcfg)
 			if err != nil {
@@ -84,23 +90,29 @@ func (t *HarTracingHandler) HandleFunc() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		log.Trace().Str("requestPath", c.Request.RequestURI).Msg(semLogContext)
 
-		var span hartracing.Span
+		var harSpan hartracing.Span
 		var entry har.Entry
 		parentSpanCtx, serr := hartracing.GlobalTracer().Extract("", hartracing.HTTPHeadersCarrier(c.Request.Header))
 		if nil != serr {
-			// No incoming span. Need to create a new root one with an actual entry.
-			span = hartracing.GlobalTracer().StartSpan()
-			log.Trace().Str("span-id", span.Id()).Msg(semLogContext + " - starting a brand new span")
+			// No incoming harSpan. Need to create a new root one with an actual entry.
+			harSpan = hartracing.GlobalTracer().StartSpan()
+			log.Trace().Str("harSpan-id", harSpan.Id()).Msg(semLogContext + " - starting a brand new harSpan")
 			blw := &bodyBufferedWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 			c.Writer = blw
 			entry = getRequestEntry(c)
-		} else {
-			span = hartracing.GlobalTracer().StartSpan(hartracing.ChildOf(parentSpanCtx))
-			log.Trace().Str("span-id", span.Id()).Str("parent-span-id", parentSpanCtx.Id()).Msg(semLogContext + " - started a child span")
-		}
-		defer span.Finish()
 
-		c.Request = c.Request.WithContext(hartracing.ContextWithSpan(c.Request.Context(), span))
+			span := opentracing.SpanFromContext(c.Request.Context())
+			if nil != span {
+				span.SetTag(hartracing.HARTraceOpenTracingTagName, harSpan.Id())
+			}
+
+		} else {
+			harSpan = hartracing.GlobalTracer().StartSpan(hartracing.ChildOf(parentSpanCtx))
+			log.Trace().Str("harSpan-id", harSpan.Id()).Str("parent-harSpan-id", parentSpanCtx.Id()).Msg(semLogContext + " - started a child harSpan")
+		}
+		defer harSpan.Finish()
+
+		c.Request = c.Request.WithContext(hartracing.ContextWithSpan(c.Request.Context(), harSpan))
 
 		if nil != c {
 			c.Next()
@@ -108,7 +120,7 @@ func (t *HarTracingHandler) HandleFunc() gin.HandlerFunc {
 
 		if entry.Request != nil {
 			getResponseEntry(c, &entry)
-			span.AddEntry(&entry)
+			harSpan.AddEntry(&entry)
 		}
 
 		log.Trace().Msg(semLogContext)

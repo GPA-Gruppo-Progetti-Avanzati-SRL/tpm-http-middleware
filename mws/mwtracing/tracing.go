@@ -40,6 +40,11 @@ func NewTracingHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 
 	if cfg != nil && !reflect.ValueOf(cfg).IsNil() {
 		switch typedCfg := cfg.(type) {
+		case mwregistry.HandlerCatalogConfig:
+			err := mapstructure.Decode(typedCfg, &tcfg)
+			if err != nil {
+				return nil, err
+			}
 		case map[string]interface{}:
 			err := mapstructure.Decode(typedCfg, &tcfg)
 			if err != nil {
