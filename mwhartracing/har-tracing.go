@@ -11,6 +11,7 @@ import (
 	"github.com/opentracing/opentracing-go"
 	"github.com/rs/zerolog/log"
 	"io"
+	"net/http"
 	"reflect"
 	"strings"
 	"time"
@@ -187,7 +188,7 @@ func getResponseEntry(c *gin.Context, e *har.Entry) {
 	r := &har.Response{
 		Status:      c.Writer.Status(),
 		HTTPVersion: "1.1",
-		StatusText:  "TBD",
+		StatusText:  http.StatusText(c.Writer.Status()),
 		HeadersSize: -1,
 		BodySize:    int64(c.Writer.Size()),
 		Cookies:     []har.Cookie{},
