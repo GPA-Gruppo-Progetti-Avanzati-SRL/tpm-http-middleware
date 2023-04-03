@@ -2,9 +2,10 @@ package mwmetrics
 
 import (
 	"fmt"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util/promutil"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mwregistry"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mws"
-	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mws/mwmetrics/promutil"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
 	"github.com/prometheus/client_golang/prometheus"
@@ -21,7 +22,7 @@ func init() {
 
 type PromHttpMetricsHandler struct {
 	config     *PromHttpMetricsHandlerConfig
-	collectors []promutil.MetricInfo
+	collectors promutil.Group
 }
 
 func MustNewPromHttpMetricsHandler(cfg interface{}) mws.MiddlewareHandler {
@@ -60,27 +61,44 @@ func NewPromHttpMetricsHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 		log.Info().Str("mw-id", MetricsHandlerId).Msg(semLogContext + " config null...reverting to default values")
 	}
 
-	if tcfg.Namespace == "" || tcfg.Subsystem == "" {
-		tcfg = DefaultMetricsConfig
+	if tcfg.RefMetrics != nil {
+		// Using global registry...
+		log.Info().Interface("ref-metrics", tcfg.RefMetrics).Msg(semLogContext + " using externally defined metrics")
 	} else {
-		if len(tcfg.Collectors) == 0 {
-			tcfg.Collectors = DefaultMetricsConfig.Collectors
+		if tcfg.Namespace == "" || tcfg.Subsystem == "" {
+			tcfg = DefaultMetricsConfig
+		} else {
+			if len(tcfg.Collectors) == 0 {
+				tcfg.Collectors = DefaultMetricsConfig.Collectors
+			}
+		}
+
+		tcfg.RefMetrics = &promutil.MetricsConfigReference{
+			GId:         promutil.MetricsConfigReferenceLocalGroup,
+			CounterId:   "requests",
+			HistogramId: "request_duration",
 		}
 	}
 
 	log.Info().Str("mw-id", MetricsHandlerId).Interface("cfg", tcfg).Msg(semLogContext + " handler loaded config")
 
-	collectors := make([]promutil.MetricInfo, 0)
+	if tcfg.RefMetrics.IsLocal() {
+		mregistry, err := promutil.InitGroup(promutil.MetricGroupConfig{Namespace: tcfg.Namespace, Subsystem: tcfg.Subsystem, Collectors: tcfg.Collectors})
+		return &PromHttpMetricsHandler{config: &tcfg, collectors: mregistry}, err
+		/*
+			collectors := make([]promutil.Metric, 0)
 
-	for _, mCfg := range tcfg.Collectors {
-		if mc, err := promutil.NewCollector(tcfg.Namespace, tcfg.Subsystem, mCfg.Name, &mCfg); err != nil {
-			log.Error().Err(err).Str("name", mCfg.Name).Msg("error creating metric")
-		} else {
-			collectors = append(collectors, promutil.MetricInfo{Type: mCfg.Type, Id: mCfg.Id, Name: mCfg.Name, Collector: mc, Labels: mCfg.Labels})
-		}
+			for _, mCfg := range tcfg.Collectors {
+				if mc, err := promutil.NewCollector(tcfg.Namespace, tcfg.Subsystem, mCfg.Name, &mCfg); err != nil {
+					log.Error().Err(err).Str("name", mCfg.Name).Msg("error creating metric")
+				} else {
+					collectors = append(collectors, promutil.Metric{Type: mCfg.Type, Id: mCfg.Id, Name: mCfg.Name, Collector: mc, Labels: mCfg.Labels})
+				}
+			}
+		*/
 	}
 
-	return &PromHttpMetricsHandler{config: &tcfg, collectors: collectors}, nil
+	return &PromHttpMetricsHandler{config: &tcfg}, nil
 }
 
 func (h *PromHttpMetricsHandler) GetKind() string {
@@ -89,23 +107,34 @@ func (h *PromHttpMetricsHandler) GetKind() string {
 
 func (m *PromHttpMetricsHandler) HandleFunc() gin.HandlerFunc {
 
+	const semLogContext = "metrics-handler::handle-func"
 	return func(c *gin.Context) {
+
+		g, _, err := m.config.RefMetrics.ResolveGroup(m.collectors)
+		if err != nil {
+			log.Error().Err(err).Msg(semLogContext + " disabling mw metrics")
+			m.config.RefMetrics.GId = "-"
+		}
 
 		beginOfMiddleware := time.Now()
 
 		var sc = "500"
 		ep := c.Request.URL.String()
 
-		defer func(begin time.Time) {
-			promutil.SetMetricValueById(m.collectors, "request_duration", time.Since(begin).Seconds(), prometheus.Labels{"endpoint": ep, "status_code": sc})
-		}(beginOfMiddleware)
+		if m.config.RefMetrics.IsHistogramEnabled() {
+			defer func(begin time.Time) {
+				g.SetMetricValueById(m.config.RefMetrics.HistogramId, time.Since(begin).Seconds(), prometheus.Labels{"endpoint": ep, "status-code": sc})
+			}(beginOfMiddleware)
+		}
 
 		if nil != c {
 			c.Next()
 		}
 
-		sc = fmt.Sprintf("%d", c.Writer.Status())
-		_ = promutil.SetMetricValueById(m.collectors, "requests", 1, prometheus.Labels{"endpoint": ep, "status_code": sc})
+		if m.config.RefMetrics.IsCounterEnabled() {
+			sc = fmt.Sprintf("%d", c.Writer.Status())
+			_ = g.SetMetricValueById(m.config.RefMetrics.CounterId, 1, prometheus.Labels{"endpoint": ep, "status-code": sc})
+		}
 	}
 
 }

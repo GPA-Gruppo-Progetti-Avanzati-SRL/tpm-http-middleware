@@ -1,8 +1,6 @@
 package mwmetrics
 
-import (
-	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mws/mwmetrics/promutil"
-)
+import "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util/promutil"
 
 const (
 	MetricsHandlerId   = "mw-metrics"
@@ -14,18 +12,40 @@ var DefaultMetricsConfig = PromHttpMetricsHandlerConfig{
 	Subsystem: "http_server",
 	Collectors: []promutil.MetricConfig{
 		{
-			Id:     "requests",
-			Name:   "requests",
-			Help:   "numero richieste",
-			Labels: "endpoint,status_code",
-			Type:   promutil.MetricTypeCounter,
+			Id:   "requests",
+			Name: "requests",
+			Help: "numero richieste",
+			Labels: promutil.MetricLabelsConfig{
+				{
+					Id:           "endpoint",
+					Name:         "endpoint",
+					DefaultValue: "N/A",
+				},
+				{
+					Id:           "status-code",
+					Name:         "status_code",
+					DefaultValue: "-1",
+				},
+			},
+			Type: promutil.MetricTypeCounter,
 		},
 		{
-			Id:     "request_duration",
-			Name:   "request_duration",
-			Help:   "durata lavorazione richiesta",
-			Labels: "endpoint,status_code",
-			Type:   promutil.MetricTypeHistogram,
+			Id:   "request_duration",
+			Name: "request_duration",
+			Help: "durata lavorazione richiesta",
+			Labels: promutil.MetricLabelsConfig{
+				{
+					Id:           "endpoint",
+					Name:         "endpoint",
+					DefaultValue: "N/A",
+				},
+				{
+					Id:           "status-code",
+					Name:         "status_code",
+					DefaultValue: "-1",
+				},
+			},
+			Type: promutil.MetricTypeHistogram,
 			Buckets: promutil.HistogramBucketConfig{
 				Type:        "linear",
 				Start:       promutil.DefaultMetricsDurationBucketsStart,
@@ -41,9 +61,10 @@ var DefaultMetricsConfig = PromHttpMetricsHandlerConfig{
  */
 
 type PromHttpMetricsHandlerConfig struct {
-	Namespace  string                  `yaml:"namespace"  mapstructure:"namespace"  json:"namespace"`
-	Subsystem  string                  `yaml:"subsystem"  mapstructure:"subsystem"  json:"subsystem"`
-	Collectors []promutil.MetricConfig `yaml:"metrics"  mapstructure:"metrics"  json:"metrics"`
+	RefMetrics *promutil.MetricsConfigReference `yaml:"ref-metrics"  mapstructure:"ref-metrics"  json:"ref-metrics"`
+	Namespace  string                           `yaml:"namespace"  mapstructure:"namespace"  json:"namespace"`
+	Subsystem  string                           `yaml:"subsystem"  mapstructure:"subsystem"  json:"subsystem"`
+	Collectors []promutil.MetricConfig          `yaml:"metrics"  mapstructure:"metrics"  json:"metrics"`
 }
 
 var DefaultPromHttpMetricsHandlerConfig = PromHttpMetricsHandlerConfig{}

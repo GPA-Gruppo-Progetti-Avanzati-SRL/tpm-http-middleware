@@ -1,4 +1,4 @@
-package promutil
+package promutil_old
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
