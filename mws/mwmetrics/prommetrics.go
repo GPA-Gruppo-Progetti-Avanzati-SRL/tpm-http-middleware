@@ -76,7 +76,7 @@ func NewPromHttpMetricsHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 		tcfg.RefMetrics = &promutil.MetricsConfigReference{
 			GId:         promutil.MetricsConfigReferenceLocalGroup,
 			CounterId:   "requests",
-			HistogramId: "request_duration",
+			HistogramId: "request-duration",
 		}
 	}
 

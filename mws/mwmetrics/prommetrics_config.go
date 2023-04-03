@@ -30,7 +30,7 @@ var DefaultMetricsConfig = PromHttpMetricsHandlerConfig{
 			Type: promutil.MetricTypeCounter,
 		},
 		{
-			Id:   "request_duration",
+			Id:   "request-duration",
 			Name: "request_duration",
 			Help: "durata lavorazione richiesta",
 			Labels: promutil.MetricLabelsConfig{
