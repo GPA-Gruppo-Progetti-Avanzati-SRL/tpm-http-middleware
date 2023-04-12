@@ -118,12 +118,11 @@ func (m *PromHttpMetricsHandler) HandleFunc() gin.HandlerFunc {
 
 		beginOfMiddleware := time.Now()
 
-		var sc = "500"
-		ep := c.Request.URL.String()
+		lbls := metricsLabels(c, c.Request.URL.String(), "500")
 
 		if m.config.RefMetrics.IsHistogramEnabled() {
 			defer func(begin time.Time) {
-				g.SetMetricValueById(m.config.RefMetrics.HistogramId, time.Since(begin).Seconds(), prometheus.Labels{"endpoint": ep, "status-code": sc})
+				g.SetMetricValueById(m.config.RefMetrics.HistogramId, time.Since(begin).Seconds(), lbls)
 			}(beginOfMiddleware)
 		}
 
@@ -132,9 +131,36 @@ func (m *PromHttpMetricsHandler) HandleFunc() gin.HandlerFunc {
 		}
 
 		if m.config.RefMetrics.IsCounterEnabled() {
-			sc = fmt.Sprintf("%d", c.Writer.Status())
-			_ = g.SetMetricValueById(m.config.RefMetrics.CounterId, 1, prometheus.Labels{"endpoint": ep, "status-code": sc})
+			lbls[MetricStatusCodeLabelId] = fmt.Sprintf("%d", c.Writer.Status())
+			_ = g.SetMetricValueById(m.config.RefMetrics.CounterId, 1, lbls)
 		}
 	}
 
+}
+
+const (
+	MetricsCustomLabels     = MetricsHandlerId + "-custom-labels"
+	MetricEndpointLabelId   = "endpoint"
+	MetricStatusCodeLabelId = "status-code"
+)
+
+func metricsLabels(c *gin.Context, ep string, sc string) prometheus.Labels {
+
+	const semLogContext = "metrics-handler::metrics-labels"
+
+	metricsLabels := prometheus.Labels{
+		MetricEndpointLabelId:   ep,
+		MetricStatusCodeLabelId: sc,
+	}
+
+	if customLbls, ok := c.Get(MetricsCustomLabels); ok {
+		if lbls, ok := customLbls.(prometheus.Labels); ok {
+			for n, v := range lbls {
+				metricsLabels[n] = v
+			}
+		} else {
+			log.Warn().Str("custom-labels", MetricsCustomLabels).Msg(semLogContext + " found context key but not a prometheus.Labels")
+		}
+	}
+	return metricsLabels
 }
