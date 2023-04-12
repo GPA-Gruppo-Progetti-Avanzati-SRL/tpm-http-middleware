@@ -118,11 +118,14 @@ func (m *PromHttpMetricsHandler) HandleFunc() gin.HandlerFunc {
 
 		beginOfMiddleware := time.Now()
 
-		lbls := metricsLabels(c, c.Request.URL.String(), "500")
+		var lbls prometheus.Labels
 
 		if m.config.RefMetrics.IsHistogramEnabled() {
 			defer func(begin time.Time) {
-				g.SetMetricValueById(m.config.RefMetrics.HistogramId, time.Since(begin).Seconds(), lbls)
+				err = g.SetMetricValueById(m.config.RefMetrics.HistogramId, time.Since(begin).Seconds(), lbls)
+				if err != nil {
+					log.Error().Err(err).Msg(semLogContext + " setting metrics")
+				}
 			}(beginOfMiddleware)
 		}
 
@@ -130,6 +133,7 @@ func (m *PromHttpMetricsHandler) HandleFunc() gin.HandlerFunc {
 			c.Next()
 		}
 
+		lbls = metricsLabels(c, c.Request.URL.String(), "500")
 		if m.config.RefMetrics.IsCounterEnabled() {
 			lbls[MetricStatusCodeLabelId] = fmt.Sprintf("%d", c.Writer.Status())
 			_ = g.SetMetricValueById(m.config.RefMetrics.CounterId, 1, lbls)
