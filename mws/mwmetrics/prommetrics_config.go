@@ -18,12 +18,12 @@ var DefaultMetricsConfig = PromHttpMetricsHandlerConfig{
 			Labels: promutil.MetricLabelsConfig{
 				/* endpoint is dangerous because it can lead to tons of metrics due to params in path-info that are not detected.
 				   it is still configured but only
+				*/
 				{
 					Id:           "endpoint",
 					Name:         "endpoint",
-					DefaultValue: "N/A",
+					DefaultValue: "not-provided",
 				},
-				*/
 				{
 					Id:           "http-method",
 					Name:         "http_method",
@@ -42,12 +42,11 @@ var DefaultMetricsConfig = PromHttpMetricsHandlerConfig{
 			Name: "request_duration",
 			Help: "durata lavorazione richiesta",
 			Labels: promutil.MetricLabelsConfig{
-				/*{
+				{
 					Id:           "endpoint",
 					Name:         "endpoint",
-					DefaultValue: "N/A",
+					DefaultValue: "not-provided",
 				},
-				*/
 				{
 					Id:           "http-method",
 					Name:         "http_method",
