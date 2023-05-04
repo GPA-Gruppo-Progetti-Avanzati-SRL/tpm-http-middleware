@@ -133,7 +133,7 @@ func (m *PromHttpMetricsHandler) HandleFunc() gin.HandlerFunc {
 			c.Next()
 		}
 
-		lbls = metricsLabels(c, c.Request.URL.String(), "500")
+		lbls = metricsLabels(c, c.Request.Method, c.Request.URL.String(), "500")
 		if m.config.RefMetrics.IsCounterEnabled() {
 			lbls[MetricStatusCodeLabelId] = fmt.Sprintf("%d", c.Writer.Status())
 			_ = g.SetMetricValueById(m.config.RefMetrics.CounterId, 1, lbls)
@@ -146,15 +146,17 @@ const (
 	MetricsCustomLabels     = MetricsHandlerId + "-custom-labels"
 	MetricEndpointLabelId   = "endpoint"
 	MetricStatusCodeLabelId = "status-code"
+	MetricMethodLabelId     = "http-method"
 )
 
-func metricsLabels(c *gin.Context, ep string, sc string) prometheus.Labels {
+func metricsLabels(c *gin.Context, m string, ep string, sc string) prometheus.Labels {
 
 	const semLogContext = "metrics-handler::metrics-labels"
 
 	metricsLabels := prometheus.Labels{
-		MetricEndpointLabelId:   ep,
+		// MetricEndpointLabelId:   ep, deprecated should be handled with custom-labels to handle the param info.
 		MetricStatusCodeLabelId: sc,
+		MetricMethodLabelId:     m,
 	}
 
 	if customLbls, ok := c.Get(MetricsCustomLabels); ok {
