@@ -50,7 +50,7 @@ var DefaultMetricsConfig = PromHttpMetricsHandlerConfig{
 				{
 					Id:           "http-method",
 					Name:         "http_method",
-					DefaultValue: "N/A",
+					DefaultValue: "not-provided",
 				},
 				{
 					Id:           "status-code",
