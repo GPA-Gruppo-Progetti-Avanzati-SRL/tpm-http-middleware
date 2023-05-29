@@ -3,7 +3,7 @@ module github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware
 go 1.19
 
 require (
-	github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common v0.0.94
+	github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common v0.1.1
 	github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-archive v0.0.24
 	github.com/gin-gonic/gin v1.9.0
 	github.com/matoous/go-nanoid v1.5.0
