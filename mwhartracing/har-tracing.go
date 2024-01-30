@@ -70,6 +70,7 @@ func NewHarTracingHandler(cfg interface{}) (mws.MiddlewareHandler, error) {
 				return nil, err
 			}
 		case *HarTracingHandlerConfig:
+			tcfg = *typedCfg
 		default:
 			log.Warn().Msg(semLogContext + " unmarshal issue for tracing handler config")
 		}

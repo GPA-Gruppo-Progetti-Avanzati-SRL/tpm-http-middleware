@@ -11,7 +11,9 @@ type HarTracingHandlerConfig struct {
 	RefMetrics *promutil.MetricsConfigReference `yaml:"ref-metrics"  mapstructure:"ref-metrics"  json:"ref-metrics"`
 }
 
-var DefaultTracingHandlerConfig = HarTracingHandlerConfig{}
+var DefaultTracingHandlerConfig = HarTracingHandlerConfig{
+	RefMetrics: nil,
+}
 
 func (h *HarTracingHandlerConfig) GetKind() string {
 	return HarTracingHandlerKind
