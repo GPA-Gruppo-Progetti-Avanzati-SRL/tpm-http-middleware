@@ -1,11 +1,14 @@
 package mwhartracing
 
+import "github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util/promutil"
+
 const (
 	HarTracingHandlerId   = "mw-har-tracing"
 	HarTracingHandlerKind = "mw-kind-har-tracing"
 )
 
 type HarTracingHandlerConfig struct {
+	RefMetrics *promutil.MetricsConfigReference `yaml:"ref-metrics"  mapstructure:"ref-metrics"  json:"ref-metrics"`
 }
 
 var DefaultTracingHandlerConfig = HarTracingHandlerConfig{}

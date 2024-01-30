@@ -2,6 +2,8 @@ package mwhartracing
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common/util/promutil"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-archive/har"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-archive/hartracing"
 	"github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-middleware/mwregistry"
@@ -9,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
 	"github.com/opentracing/opentracing-go"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"
@@ -90,6 +93,7 @@ func (t *HarTracingHandler) HandleFunc() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		log.Trace().Str("requestPath", c.Request.RequestURI).Msg(semLogContext)
+		beginOf := time.Now()
 
 		var harSpan hartracing.Span
 		var entry har.Entry
@@ -121,7 +125,15 @@ func (t *HarTracingHandler) HandleFunc() gin.HandlerFunc {
 
 		if entry.Request != nil {
 			getResponseEntry(c, &entry)
-			harSpan.AddEntry(&entry)
+			err := harSpan.AddEntry(&entry)
+			if err != nil {
+				log.Warn().Err(err).Msg(semLogContext)
+			}
+
+			err = setMetrics(t.config.RefMetrics, &entry, beginOf)
+			if err != nil {
+				log.Warn().Err(err).Msg(semLogContext)
+			}
 		}
 
 		log.Trace().Msg(semLogContext)
@@ -227,4 +239,37 @@ func getFirstHeaderValue(vals []string) string {
 	}
 
 	return ""
+}
+
+func setMetrics(cfg *promutil.MetricsConfigReference, entry *har.Entry, begin time.Time) error {
+	const semLogContext = "har-tracing-middleware::set-metrics"
+
+	if cfg != nil && cfg.IsEnabled() {
+
+		metricsLabels := prometheus.Labels{
+			"status-code": fmt.Sprint(entry.Response.Status),
+		}
+
+		g, err := promutil.GetGroup(cfg.GId)
+		if err != nil {
+			log.Error().Err(err).Msg(semLogContext)
+			return err
+		}
+
+		if cfg.IsCounterEnabled() {
+			err = g.SetMetricValueById(cfg.CounterId, 1, metricsLabels)
+			if err != nil {
+				log.Warn().Err(err).Msg(semLogContext)
+			}
+		}
+
+		if cfg.IsHistogramEnabled() {
+			err = g.SetMetricValueById(cfg.HistogramId, time.Since(begin).Seconds(), metricsLabels)
+			if err != nil {
+				log.Warn().Err(err).Msg(semLogContext)
+			}
+		}
+	}
+
+	return nil
 }
