@@ -1,5 +1,5 @@
-github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common v0.1.38-RC1 h1:dsQuNOnwOxG3vgCtCWG5diGjIeBjuwaLYiUSTglWk3A=
-github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common v0.1.38-RC1/go.mod h1:vnI1W77dpctWxMspokeoSVbGAOaU66mKfnCOyyoEYWQ=
+github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common v0.1.38 h1:0LyMgYEdu0oS3O3cd8XXCKi59uT9z2PvAUQMcC/rOhc=
+github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common v0.1.38/go.mod h1:vnI1W77dpctWxMspokeoSVbGAOaU66mKfnCOyyoEYWQ=
 github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-archive v0.0.34-RC1 h1:2OFjCc3URG8NvtVQkkZj+aw+t0TUoq1QjqZNPsUN9MQ=
 github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-archive v0.0.34-RC1/go.mod h1:c3VJXaCJYI+iWgl1cJORvMmBB4+5M4SdeNoxD1JMpTM=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
