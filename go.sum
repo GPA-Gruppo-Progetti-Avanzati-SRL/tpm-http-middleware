@@ -1,7 +1,7 @@
 github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common v0.1.71 h1:1tnpVWHosJecMFfAurZoN9iuuBqCFkUFwPkGxioYIDk=
 github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-common v0.1.71/go.mod h1:vnI1W77dpctWxMspokeoSVbGAOaU66mKfnCOyyoEYWQ=
-github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-archive v0.1.18 h1:ARbnAq3RvSvV4XzZKYjQVQNvD1VM5ngoXFk8af1/C4o=
-github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-archive v0.1.18/go.mod h1:XQy1Rc+B3p28WecZykjUo8iYnNadREBE5BE9KOMuVAI=
+github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-archive v0.1.19-RC2 h1:RYeTiqlOwRdhiqGAwwCK9NJE/n3PuMXOCsbholMkq5g=
+github.com/GPA-Gruppo-Progetti-Avanzati-SRL/tpm-http-archive v0.1.19-RC2/go.mod h1:Y61VEki6xWiueq2h+9ISGtgoxpOJYmMdLtyfDQGHEcY=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/bytedance/sonic v1.11.6 h1:oUp34TzMlL+OY1OUWxHqsdkgC/Zfc85zGqw9siXjrc0=
